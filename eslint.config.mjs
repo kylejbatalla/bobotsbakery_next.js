@@ -3,6 +3,14 @@ import nextVitals from "eslint-config-next/core-web-vitals";
 
 const eslintConfig = defineConfig([
   ...nextVitals,
+  {
+    rules: {
+      // Plain apostrophes in text (Bobot's, we'd) are fine.
+      "react/no-unescaped-entities": "off",
+      // Static export can't optimize images, so next/image adds nothing here.
+      "@next/next/no-img-element": "off",
+    },
+  },
   // Override default ignores of eslint-config-next.
   globalIgnores([
     // Default ignores of eslint-config-next:
