@@ -2,7 +2,7 @@
 
 import { useState, useMemo, useRef, useEffect } from 'react';
 import Link from 'next/link';
-import { ORDER_ENDPOINT } from '@/lib/config';
+import { ORDER_ENDPOINT, ORDERING_CLOSED, CLOSED_MESSAGE } from '@/lib/config';
 import { fmt } from '@/lib/menu';
 import { useCart } from '@/components/CartContext';
 import QtyStepper from '@/components/QtyStepper';
@@ -86,6 +86,7 @@ export default function Cart() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (ORDERING_CLOSED) return fail(<><strong>Ordering is closed.</strong> {CLOSED_MESSAGE}</>);
 
     const items = Object.fromEntries(Object.entries(cart).filter(([, n]) => n > 0));
     if (Object.keys(items).length === 0)
@@ -199,6 +200,11 @@ export default function Cart() {
       <section>
         <div className="container order-wrapper">
           <form className="order-form" onSubmit={handleSubmit} noValidate>
+            {ORDERING_CLOSED && (
+              <div role="alert" style={{ ...STATUS_STYLES.error, padding: '1rem 1.2rem', borderRadius: 8, marginBottom: '1.5rem', textAlign: 'center', fontWeight: 600 }}>
+                &#9888;&#65039; {CLOSED_MESSAGE}
+              </div>
+            )}
             <h2 style={{ marginBottom: '0.4rem' }}>Order Summary</h2>
             <p style={{ color: 'var(--wood)', marginBottom: '1.5rem' }}>
               Adjust quantities here, or <Link href="/order" style={linkStyle}>keep shopping</Link>.
@@ -308,8 +314,8 @@ export default function Cart() {
 
             <StatusBox status={status} statusRef={statusRef} />
 
-            <button type="submit" className="btn btn-primary" disabled={sending} style={{ width: '100%', padding: '1rem' }}>
-              {sending ? 'Sending order…' : `Submit Order Request · ${fmt(total)}`}
+            <button type="submit" className="btn btn-primary" disabled={sending || ORDERING_CLOSED} style={{ width: '100%', padding: '1rem', ...(ORDERING_CLOSED ? { opacity: 0.5, cursor: 'not-allowed' } : {}) }}>
+              {ORDERING_CLOSED ? 'Ordering Closed' : sending ? 'Sending order…' : `Submit Order Request · ${fmt(total)}`}
             </button>
             {!ORDER_ENDPOINT && (
               <p style={{ textAlign: 'center', marginTop: '1rem', fontStyle: 'italic', color: 'var(--wood)', fontSize: '0.9rem' }}>

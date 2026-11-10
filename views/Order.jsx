@@ -4,6 +4,13 @@ import Link from 'next/link';
 import { PRODUCTS, ITEM_BY_KEY, fmt } from '@/lib/menu';
 import { useCart } from '@/components/CartContext';
 import QtyStepper from '@/components/QtyStepper';
+import { ORDERING_CLOSED, CLOSED_MESSAGE } from '@/lib/config';
+
+const CLOSED_BANNER_STYLE = {
+  background: '#fde2e2', border: '2px solid #ce1126', color: '#5c3a1e', borderRadius: 8,
+  padding: '1rem 1.2rem', margin: '0 auto 2rem', maxWidth: 800, textAlign: 'center',
+  fontSize: '1.15rem', fontWeight: 600,
+};
 
 function VariantRow({ itemKey, productName }) {
   const { cart, add, setQty } = useCart();
@@ -16,7 +23,12 @@ function VariantRow({ itemKey, productName }) {
         <span className="price-amount">{fmt(item.price)}</span>
         <span className="price-unit">{item.unit}</span>
       </div>
-      {qty === 0 ? (
+      {ORDERING_CLOSED ? (
+        <button type="button" className="btn btn-primary btn-small" disabled
+                style={{ opacity: 0.5, cursor: 'not-allowed' }} aria-label={`${item.name} unavailable — ordering closed`}>
+          Unavailable
+        </button>
+      ) : qty === 0 ? (
         <button type="button" className="btn btn-primary btn-small" onClick={() => add(itemKey)}
                 aria-label={`Add ${item.name} to cart`}>
           Add to cart
@@ -29,7 +41,8 @@ function VariantRow({ itemKey, productName }) {
 }
 
 export default function Order() {
-  const { count, total } = useCart();
+  const { count: cartCount, total } = useCart();
+  const count = ORDERING_CLOSED ? 0 : cartCount;
 
   return (
     <div className={count > 0 ? 'has-cart-bar' : undefined}>
@@ -45,6 +58,11 @@ export default function Order() {
 
       <section>
         <div className="container">
+          {ORDERING_CLOSED && (
+            <div role="alert" style={CLOSED_BANNER_STYLE}>
+              &#9888;&#65039; {CLOSED_MESSAGE}
+            </div>
+          )}
           <h2 className="section-title">Bread &amp; Pastries</h2>
           <p className="order-intro">
             Local pickup only in Salinas, Ca. Up to 5 of each item per order — for bigger orders,{' '}
